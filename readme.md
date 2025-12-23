@@ -2,7 +2,6 @@
 
 **Current Version: 1.1.3**  
 **GitHub Repository:** [https://github.com/ShirazuNagisa/splayer](https://github.com/ShirazuNagisa/splayer)
-**GitHub Repository:** [https://blog.shirazu-nagisa.com/index.php/2025/12/24/splayer%e4%bd%bf%e7%94%a8%e6%8c%87%e5%8d%97/](sh1razu's blog)
 ---
 
 SPlayer is a lightweight and elegant WordPress music player plugin that supports multiple languages.  
@@ -28,3 +27,4 @@ For detailed instructions and full documentation, please select your preferred l
 - GitHub auto-update support
 
 For detailed instructions, screenshots, and usage guides, please refer to the language-specific README files above.
+Refer to the official document: [sh1razu's blog](https://blog.shirazu-nagisa.com/index.php/2025/12/24/splayer%e4%bd%bf%e7%94%a8%e6%8c%87%e5%8d%97/)
