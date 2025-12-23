@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: SPlayer — Simple Floating Music Player
- * Plugin URI:  https://github.com/YOUR_GITHUB_USERNAME/splayer
- * Description: 轻量圆角浮动音乐播放器，支持后台图形化歌单管理、播放模式、GitHub 仓库检查并下载安装更新。
+ * Plugin URI:  https://github.com/ShirazuNagisa/splayer
+ * Description: 轻量浮动音乐播放器，支持后台图形化歌单管理、播放模式、GitHub 仓库检查并下载安装更新。
  * Version:     1.0.0
- * Author:      Your Name
- * Author URI:  https://your-site.example
+ * Author:      sh1razu
+ * Author URI:  https://www.shirazu-nagisa.com
  * Text Domain: splayer
  * Domain Path: /languages
  */
