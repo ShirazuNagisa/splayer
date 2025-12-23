@@ -1,182 +1,112 @@
 (function () {
+  'use strict';
 
-  /* ===============================
-     后台直接退出
-     =============================== */
-  if (typeof SPLAYER_DATA !== 'undefined' && SPLAYER_DATA.is_admin) {
-    return;
-  }
+  const S = window.SPLAYER || {};
+  const playlist = Array.isArray(S.playlist) ? S.playlist : [];
+  if (!playlist.length) return;
 
-  const STORAGE_KEY = 'splayer_disc_position';
+  /* ====== DOM ====== */
+  const disc = document.createElement('div');
+  disc.className = 'splayer-disc';
 
-  document.addEventListener('DOMContentLoaded', function () {
-    mountSPlayer();
-  });
+  const discCover = document.createElement('div');
+  discCover.className = 'cover';
+  disc.appendChild(discCover);
+  document.body.appendChild(disc);
 
-  /* ===============================
-     挂载播放器
-     =============================== */
-  function mountSPlayer() {
-    if (document.querySelector('.splayer-root')) return;
-
-    /* 根容器 */
-    const root = document.createElement('div');
-    root.className = 'splayer-root';
-    document.body.appendChild(root);
-
-    /* 圆形唱片 */
-    const disc = document.createElement('div');
-    disc.className = 'splayer-disc';
-    root.appendChild(disc);
-
-    /* 恢复位置 */
-    restoreDiscPosition(disc);
-
-    /* 展开面板 */
-    const panel = document.createElement('div');
-    panel.className = 'splayer-panel';
-    panel.innerHTML = `
-      <div class="splayer-panel-inner">
-        <div class="splayer-title">SPlayer</div>
-        <div class="splayer-playlist"></div>
-        <div class="splayer-controls">
-          <button data-mode="single">单曲</button>
-          <button data-mode="loop">循环</button>
-          <button data-mode="random">随机</button>
-        </div>
+  const panel = document.createElement('div');
+  panel.className = 'splayer-panel splayer-hidden';
+  panel.innerHTML = `
+    <div class="panel-cover"></div>
+    <div class="controls">
+      <div class="row">
+        <button id="sp-prev">⏮</button>
+        <button id="sp-play">▶</button>
+        <button id="sp-next">⏭</button>
       </div>
-    `;
-    root.appendChild(panel);
+      <div class="title" id="sp-title"></div>
+    </div>
+  `;
+  document.body.appendChild(panel);
 
-    /* 展开 / 收起 */
-    disc.addEventListener('click', function () {
-      if (disc._dragging) return;
-      panel.classList.toggle('show');
-    });
+  const panelCover = panel.querySelector('.panel-cover');
+  const titleEl = panel.querySelector('#sp-title');
 
-    /* 启用拖动（鼠标 + 触摸） */
-    enableDiscDrag(disc);
+  /* ====== AUDIO ====== */
+  const audio = new Audio();
+  audio.preload = 'auto';
+  let index = 0;
+
+  function loadTrack(i) {
+    const t = playlist[i];
+    if (!t) return;
+    index = i;
+    audio.src = t.url;
+    const cover = t.cover || S.defaultCover;
+    discCover.style.backgroundImage = `url(${cover})`;
+    panelCover.style.backgroundImage = `url(${cover})`;
+    titleEl.textContent = t.title || `Track ${i + 1}`;
   }
 
-  /* ===============================
-     拖动（Mouse + Touch）
-     =============================== */
-  function enableDiscDrag(disc) {
-    let dragging = false;
-    let sx = 0, sy = 0;
-    let sl = 0, st = 0;
+  loadTrack(0);
 
-    const start = (x, y) => {
-      dragging = true;
-      disc._dragging = false;
+  /* ====== CONTROLS ====== */
+  panel.querySelector('#sp-play').onclick = () => {
+    audio.paused ? audio.play() : audio.pause();
+  };
 
-      sx = x;
-      sy = y;
+  panel.querySelector('#sp-next').onclick = () => {
+    loadTrack((index + 1) % playlist.length);
+    audio.play();
+  };
 
-      const rect = disc.getBoundingClientRect();
-      sl = rect.left;
-      st = rect.top;
+  panel.querySelector('#sp-prev').onclick = () => {
+    loadTrack((index - 1 + playlist.length) % playlist.length);
+    audio.play();
+  };
 
-      disc.style.transition = 'none';
-    };
+  audio.onplay = () => {
+    disc.classList.add('splayer-rotating');
+    panel.querySelector('#sp-play').textContent = '⏸';
+  };
 
-    const move = (x, y) => {
-      if (!dragging) return;
+  audio.onpause = () => {
+    disc.classList.remove('splayer-rotating');
+    panel.querySelector('#sp-play').textContent = '▶';
+  };
 
-      const dx = x - sx;
-      const dy = y - sy;
-
-      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
-        disc._dragging = true;
-      }
-
-      disc.style.left = sl + dx + 'px';
-      disc.style.top = st + dy + 'px';
-      disc.style.right = 'auto';
-      disc.style.bottom = 'auto';
-    };
-
-    const end = () => {
-      if (!dragging) return;
-      dragging = false;
-      snapDiscToEdge(disc);
-      saveDiscPosition(disc);
-    };
-
-    /* Mouse */
-    disc.addEventListener('mousedown', e => {
-      start(e.clientX, e.clientY);
-      e.preventDefault();
-    });
-
-    document.addEventListener('mousemove', e => {
-      move(e.clientX, e.clientY);
-    });
-
-    document.addEventListener('mouseup', end);
-
-    /* Touch */
-    disc.addEventListener('touchstart', e => {
-      const t = e.touches[0];
-      start(t.clientX, t.clientY);
-    }, { passive: true });
-
-    document.addEventListener('touchmove', e => {
-      const t = e.touches[0];
-      move(t.clientX, t.clientY);
-    }, { passive: true });
-
-    document.addEventListener('touchend', end);
-  }
-
-  /* ===============================
-     吸附边缘
-     =============================== */
-  function snapDiscToEdge(disc) {
+  /* ====== PANEL TOGGLE ====== */
+  function showPanel() {
     const rect = disc.getBoundingClientRect();
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const padding = 12;
+    const centerX = rect.left + rect.width / 2;
 
-    let left;
-    if (rect.left + rect.width / 2 < vw / 2) {
-      left = padding;
+    panel.style.top = rect.top + 'px';
+
+    if (centerX < window.innerWidth / 2) {
+      // 唱片在左侧 → 展开窗右侧
+      panel.style.left = rect.right + 12 + 'px';
+      panel.style.right = 'auto';
     } else {
-      left = vw - rect.width - padding;
+      // 唱片在右侧 → 展开窗左侧
+      panel.style.right = window.innerWidth - rect.left + 12 + 'px';
+      panel.style.left = 'auto';
     }
 
-    let top = rect.top;
-    top = Math.max(padding, top);
-    top = Math.min(vh - rect.height - padding, top);
-
-    disc.style.transition = 'all .35s cubic-bezier(.22,.61,.36,1)';
-    disc.style.left = left + 'px';
-    disc.style.top = top + 'px';
+    panel.classList.remove('splayer-hidden');
+    requestAnimationFrame(() => {
+      panel.classList.add('splayer-panel-show');
+    });
   }
 
-  /* ===============================
-     位置存储
-     =============================== */
-  function saveDiscPosition(disc) {
-    const rect = disc.getBoundingClientRect();
-    const data = {
-      left: rect.left,
-      top: rect.top
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  function hidePanel() {
+    panel.classList.remove('splayer-panel-show');
+    setTimeout(() => {
+      panel.classList.add('splayer-hidden');
+    }, 300);
   }
 
-  function restoreDiscPosition(disc) {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
-
-    try {
-      const pos = JSON.parse(raw);
-      disc.style.left = pos.left + 'px';
-      disc.style.top = pos.top + 'px';
-      disc.style.right = 'auto';
-      disc.style.bottom = 'auto';
-    } catch (e) {}
-  }
+  disc.addEventListener('click', () => {
+    panel.classList.contains('splayer-hidden') ? showPanel() : hidePanel();
+  });
 
 })();

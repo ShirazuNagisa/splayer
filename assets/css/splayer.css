@@ -1,188 +1,96 @@
-/* splayer.css
- * 极简圆角设计 + 磨砂玻璃（backdrop-filter）
- */
-
-/* Reset a few things */
-#splayer-root * { box-sizing: border-box; }
-
+/* ====== Disc ====== */
 .splayer-disc {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
   position: fixed;
-  right: 18px;
-  bottom: 18px;
-  z-index: 99999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  right: 16px;
+  bottom: 16px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #111;
+  box-shadow: 0 8px 30px rgba(0,0,0,.45);
   cursor: pointer;
-  backdrop-filter: blur(2px);
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.06);
-  transition: transform .25s ease, box-shadow .2s ease;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  z-index: 99999;
 }
 
 .splayer-disc .cover {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  overflow: hidden;
-  display: block;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.25) inset;
-}
-
-.splayer-disc img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  display: block;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
 }
 
-/* rotation when playing */
-.splayer-disc.playing {
-  animation: splayer-rotate 6s linear infinite;
-}
-@keyframes splayer-rotate {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+/* ====== Rotating animation ====== */
+.splayer-rotating {
+  animation: splayer-spin 6s linear infinite;
 }
 
-/* small expand window */
+@keyframes splayer-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ====== Panel ====== */
 .splayer-panel {
   position: fixed;
-  right: 18px;
-  bottom: 86px;
   width: 320px;
-  max-width: 92vw;
-  border-radius: 14px;
-  z-index: 99998;
-  backdrop-filter: blur(8px);
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.08);
-  box-shadow: 0 12px 36px rgba(0,0,0,0.35);
-  overflow: hidden;
-  color: #fff;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-}
-
-/* panel header */
-.splayer-panel .header {
+  height: 96px;
+  padding: 10px;
   display: flex;
-  align-items: center;
   gap: 10px;
-  padding: 10px 12px;
-}
-.splayer-panel .header .cover {
-  width: 48px;
-  height: 48px;
-  border-radius: 8px;
-  overflow: hidden;
-  flex: 0 0 48px;
-}
-.splayer-panel .header .meta {
-  flex: 1 1 auto;
-}
-.splayer-panel .header .meta .title {
-  font-size: 14px;
-  line-height: 1.1;
-  font-weight: 600;
-}
-.splayer-panel .header .meta .artist {
-  font-size: 12px;
-  opacity: .8;
-  margin-top: 4px;
-}
+  border-radius: 16px;
+  background: rgba(255,255,255,.08);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 10px 40px rgba(0,0,0,.5);
+  z-index: 99998;
 
-/* controls row */
-.splayer-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-}
-.splayer-controls button {
-  background: rgba(255,255,255,0.04);
-  border: none;
-  padding: 8px;
-  border-radius: 10px;
-  cursor: pointer;
-}
-.splayer-controls .progress {
-  flex: 1 1 auto;
-  height: 6px;
-  border-radius: 6px;
-  background: rgba(255,255,255,0.04);
-  position: relative;
-  overflow: hidden;
-}
-
-/* progress fill */
-.splayer-controls .progress .fill {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 0%;
-  background: linear-gradient(90deg, rgba(255,255,255,0.18), rgba(255,255,255,0.36));
-  transition: width 0.2s linear;
-}
-
-/* playlist */
-.splayer-playlist {
-  max-height: 220px;
-  overflow: auto;
-  padding: 8px;
-}
-.splayer-playlist .item {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  padding: 8px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background .12s;
-}
-.splayer-playlist .item:hover { background: rgba(255,255,255,0.02); }
-.splayer-playlist .item.active { background: rgba(255,255,255,0.04); }
-.splayer-playlist .item .thumb {
-  width: 44px; height: 44px; border-radius: 8px; overflow: hidden; flex: 0 0 44px;
-}
-.splayer-playlist .item .info { font-size: 13px; }
-.splayer-playlist .item .info .name { font-weight:600; }
-.splayer-playlist .item .info .sub { opacity: .75; font-size: 12px; margin-top: 4px; }
-
-/* small text / footer */
-.splayer-footer {
-  font-size: 11px;
-  color: rgba(255,255,255,0.6);
-  padding: 6px 12px;
-  text-align: center;
-}
-
-/* responsive small screens */
-@media (max-width: 420px) {
-  .splayer-panel { width: 92vw; right: 4vw; bottom: 86px; border-radius: 12px; }
-  .splayer-disc { right: 4vw; bottom: 16px; }
-}
-
-/* ===============================
-   SPlayer 1.1.0 动效增强
-   =============================== */
-
-/* 播放器面板展开 / 收起动画 */
-.splayer-panel {
   opacity: 0;
-  transform: translateY(12px) scale(0.95);
-  pointer-events: none;
-  transition:
-    opacity .35s ease,
-    transform .35s cubic-bezier(.22,.61,.36,1);
+  transform: scale(.92) translateY(6px);
+  transition: transform 320ms cubic-bezier(.22,.61,.36,1), opacity 200ms ease;
+  will-change: transform, opacity;
 }
 
-.splayer-panel.show {
+.splayer-panel-show {
   opacity: 1;
-  transform: translateY(0) scale(1);
-  pointer-events: auto;
+  transform: scale(1) translateY(0);
+}
+
+.splayer-hidden {
+  display: none;
+}
+
+/* ====== Panel elements ====== */
+.panel-cover {
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  background-size: cover;
+  background-position: center;
+}
+
+.controls {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.controls .row {
+  display: flex;
+  gap: 8px;
+}
+
+.controls button {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(255,255,255,.12);
+  cursor: pointer;
+}
+
+.controls .title {
+  margin-top: 6px;
+  font-size: 13px;
+  opacity: .85;
 }
