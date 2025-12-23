@@ -27,3 +27,28 @@ For detailed instructions and full documentation, please select your preferred l
 - GitHub auto-update support
 
 For detailed instructions, screenshots, and usage guides, please refer to the language-specific README files above.
+Refer to the official document: [sh1razu's blog](https://blog.shirazu-nagisa.com/index.php/2025/12/24/splayer%e4%bd%bf%e7%94%a8%e6%8c%87%e5%8d%97/)
+---
+## Changelog
+
+### v1.1.4 - 2025-12-26
+- 修复展开面板时，操作按钮位置错误问题
+
+### v1.1.3 - 2025-12-25
+- 优化展开面板时的模糊效果
+
+### v1.1.2 - 2025-12-23
+- 修复圆形唱片在左边展开面板方向问题
+- 优化展开和收起动画，提升流畅度
+- 展开面板的操作按钮居中
+- 添加每首歌封面自定义功能
+
+### v1.1.1 - 2025-12-20
+- 修复拖拽圆形唱片时吸附边缘的问题
+- 修复 GitHub 更新检测功能
+
+### v1.1.0 - 2025-12-18
+- 插件首次公开发布
+- 支持圆形唱片播放控制
+- 支持后台添加歌曲 URL
+- 支持单曲循环和随机播放
