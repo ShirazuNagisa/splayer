@@ -1,10 +1,14 @@
 (function () {
 
+  /* ===============================
+     后台直接退出
+     =============================== */
+  if (typeof SPLAYER_DATA !== 'undefined' && SPLAYER_DATA.is_admin) {
+    return;
+  }
+
   const STORAGE_KEY = 'splayer_disc_position';
 
-  /* ===============================
-     DOM Ready
-     =============================== */
   document.addEventListener('DOMContentLoaded', function () {
     mountSPlayer();
   });
