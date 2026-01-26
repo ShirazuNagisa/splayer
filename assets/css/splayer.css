@@ -79,7 +79,6 @@
   margin-bottom: 8px;
 }
 
-/* ====== 面板控制按钮统一风格 ====== */
 .splayer-btn {
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
@@ -106,7 +105,6 @@
   transform: scale(0.95);
 }
 
-/* 标题居中 */
 .splayer-panel .controls .title {
   font-size: 14px;
   color: #fff;

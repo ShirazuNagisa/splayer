@@ -3,11 +3,13 @@
 
   const S = window.SPLAYER || {};
   const playlist = Array.isArray(S.playlist) ? S.playlist : [];
-  if (!playlist.length) return;
 
-  /* ====== DOM ====== */
   const disc = document.createElement('div');
   disc.className = 'splayer-disc';
+  
+  disc.style.left = '16px';
+  disc.style.top = '50%';
+  disc.style.transform = 'translateY(-50%)';
 
   const discCover = document.createElement('div');
   discCover.className = 'cover';
@@ -32,7 +34,6 @@
   const panelCover = panel.querySelector('.panel-cover');
   const titleEl = panel.querySelector('#sp-title');
 
-  /* ====== AUDIO ====== */
   const audio = new Audio();
   audio.preload = 'auto';
   let index = 0;
@@ -48,9 +49,18 @@
     titleEl.textContent = t.title || `Track ${i + 1}`;
   }
 
-  loadTrack(0);
+  if (playlist.length) {
+    loadTrack(0);
+  } else {
+    discCover.style.backgroundImage = `url(${S.defaultCover})`;
+    panelCover.style.backgroundImage = `url(${S.defaultCover})`;
+    titleEl.textContent = 'No tracks in playlist';
+    
+    panel.querySelector('#sp-play').disabled = true;
+    panel.querySelector('#sp-next').disabled = true;
+    panel.querySelector('#sp-prev').disabled = true;
+  }
 
-  /* ====== CONTROLS ====== */
   panel.querySelector('#sp-play').onclick = () => {
     audio.paused ? audio.play() : audio.pause();
   };
@@ -66,8 +76,13 @@
   audio.onplay = () => disc.classList.add('splayer-rotating');
   audio.onpause = () => disc.classList.remove('splayer-rotating');
 
-  /* ====== PANEL EXPAND/COLLAPSE ====== */
   let isPanelOpen = false;
+
+  function handleOutsideClick(e) {
+    if (!panel.contains(e.target) && !disc.contains(e.target)) {
+      hidePanel();
+    }
+  }
 
   function showPanel() {
     const rect = disc.getBoundingClientRect();
@@ -98,6 +113,10 @@
     });
 
     isPanelOpen = true;
+    
+    setTimeout(() => {
+      document.addEventListener('click', handleOutsideClick);
+    }, 100);
   }
 
   function hidePanel() {
@@ -115,44 +134,92 @@
     }, 350);
 
     isPanelOpen = false;
+    
+    document.removeEventListener('click', handleOutsideClick);
   }
 
-  disc.addEventListener('click', () => {
+  disc.addEventListener('click', (e) => {
+    e.stopPropagation();
     isPanelOpen ? hidePanel() : showPanel();
   });
-
-  /* ====== DRAGGING DISC ====== */
-  let isDragging = false, offsetX = 0, offsetY = 0;
-
-  disc.addEventListener('mousedown', e => {
-    isDragging = true;
-    offsetX = e.clientX - disc.offsetLeft;
-    offsetY = e.clientY - disc.offsetTop;
-    disc.style.transition = 'none';
-    document.body.style.userSelect = 'none';
+  
+  panel.addEventListener('click', (e) => {
+    e.stopPropagation();
   });
 
-  window.addEventListener('mousemove', e => {
+  let isDragging = false, offsetX = 0, offsetY = 0;
+
+  // 获取事件坐标（兼容鼠标和触摸事件）
+  function getEventCoordinates(e) {
+    if (e.touches && e.touches.length > 0) {
+      return {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY
+      };
+    }
+    return {
+      x: e.clientX,
+      y: e.clientY
+    };
+  }
+
+  // 开始拖动（兼容鼠标和触摸事件）
+  function startDrag(e) {
+    e.stopPropagation();
+    e.preventDefault(); // 防止触摸设备上的滚动和其他默认行为
+    
+    isDragging = true;
+    const coords = getEventCoordinates(e);
+    offsetX = coords.x - disc.offsetLeft;
+    offsetY = coords.y - disc.offsetTop;
+    disc.style.transition = 'none';
+    document.body.style.userSelect = 'none';
+    document.body.style.touchAction = 'none'; // 防止触摸设备上的默认行为
+  }
+
+  // 拖动过程（兼容鼠标和触摸事件）
+  function drag(e) {
     if (!isDragging) return;
-    let x = e.clientX - offsetX;
-    let y = e.clientY - offsetY;
+    e.preventDefault(); // 防止触摸设备上的滚动
+    
+    const coords = getEventCoordinates(e);
+    let x = coords.x - offsetX;
+    let y = coords.y - offsetY;
     x = Math.max(0, Math.min(window.innerWidth - disc.offsetWidth, x));
     y = Math.max(0, Math.min(window.innerHeight - disc.offsetHeight, y));
     disc.style.left = x + 'px';
     disc.style.top = y + 'px';
-  });
+    disc.style.transform = 'none';
+  }
 
-  window.addEventListener('mouseup', () => {
+  // 结束拖动（兼容鼠标和触摸事件）
+  function endDrag() {
     if (!isDragging) return;
+    
     isDragging = false;
     disc.style.transition = 'left 0.2s, top 0.2s, opacity 0.3s';
     document.body.style.userSelect = 'auto';
+    document.body.style.touchAction = 'auto';
     const x = disc.offsetLeft;
     if (x + disc.offsetWidth / 2 < window.innerWidth / 2) {
       disc.style.left = '16px';
+      disc.style.transform = 'translateY(-50%)';
     } else {
       disc.style.left = (window.innerWidth - disc.offsetWidth - 16) + 'px';
+      disc.style.transform = 'none';
     }
-  });
+  }
+
+  // 添加鼠标事件监听
+  disc.addEventListener('mousedown', startDrag);
+  window.addEventListener('mousemove', drag);
+  window.addEventListener('mouseup', endDrag);
+  window.addEventListener('mouseleave', endDrag); // 鼠标离开窗口时结束拖动
+
+  // 添加触摸事件监听
+  disc.addEventListener('touchstart', startDrag);
+  window.addEventListener('touchmove', drag, { passive: false });
+  window.addEventListener('touchend', endDrag);
+  window.addEventListener('touchcancel', endDrag); // 触摸被取消时结束拖动
 
 })();

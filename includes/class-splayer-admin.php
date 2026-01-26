@@ -25,7 +25,7 @@ class SPlayer_Admin {
   }
 
   /**
-   * 后台资源加载（必须存在，避免 Fatal Error）
+   * 后台资源加载
    */
   public static function enqueue_assets($hook) {
     if ($hook !== 'toplevel_page_splayer') {

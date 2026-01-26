@@ -20,10 +20,8 @@ class SPlayer_Frontend {
     }
 
     public static function shortcode_render( $atts = array() ) {
-        // enqueue via hooks if not already
         self::enqueue_assets();
         ob_start();
-        // markup is handled by JS injection when scripts run — keep placeholder for no-JS fallback
         echo '<div class="splayer-fallback">';
         echo '<noscript>请启用 JavaScript 以使用 splayer。</noscript>';
         echo '</div>';

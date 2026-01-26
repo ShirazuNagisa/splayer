@@ -1,6 +1,6 @@
 # SPlayer - WordPress バックエンド音楽プレイヤープラグイン
 
-**バージョン:** 1.1.2  
+**バージョン:** 1.1.4  
 **GitHub リポジトリ:** [https://github.com/ShirazuNagisa/splayer](https://github.com/ShirazuNagisa/splayer)  
 
 ---
