@@ -31,7 +31,7 @@ Refer to the official document: [sh1razu's blog](https://blog.shirazu-nagisa.com
 ---
 ## Changelog
 
-### v1.1.4 - 2025-12-26
+### v1.1.4 - 2026-01-26
 - 修复展开面板时，操作按钮位置错误问题
 
 ### v1.1.3 - 2025-12-25
