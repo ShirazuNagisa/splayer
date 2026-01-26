@@ -48,7 +48,4 @@ Refer to the official document: [sh1razu's blog](https://blog.shirazu-nagisa.com
 - 修复 GitHub 更新检测功能
 
 ### v1.1.0 - 2025-12-18
-- 插件首次公开发布
-- 支持圆形唱片播放控制
-- 支持后台添加歌曲 URL
-- 支持单曲循环和随机播放
+- 插件发布
