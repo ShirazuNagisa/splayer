@@ -31,6 +31,14 @@ Refer to the official document: [sh1razu's blog](https://blog.shirazu-nagisa.com
 ---
 ## Changelog
 
+### v1.1.5 - 2026-05-07
+- 为展开页添加了进度条区域
+- 为展开页添加了切换播放模式和展开播放列表的功能
+- 重构优化了展开面板的布局
+- 优化了按键图案和动画效果
+- 完善了自动拉取Github更新的功能
+- 修复了已知bug
+
 ### v1.1.4 - 2026-01-26
 - 修复展开面板时，操作按钮位置错误问题
 

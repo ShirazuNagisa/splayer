@@ -30,6 +30,7 @@ function autoload_includes() {
 }
 
 register_activation_hook( __FILE__, 'splayer_activate' );
+register_deactivation_hook( __FILE__, 'splayer_deactivate' );
 register_uninstall_hook( __FILE__, 'splayer_uninstall' );
 
 function splayer_activate() {
@@ -38,9 +39,10 @@ function splayer_activate() {
         'playlist'     => array(),
         'options'      => array(
             'autoplay' => false,
-            'mode'     => 'normal' // normal, shuffle, loop
+            'mode'     => 'normal'
         ),
-        'last_update_check' => 0
+        'last_update_check' => 0,
+        'update_info'       => array(),
     );
 
     $existing = get_option( 'splayer_options' );
@@ -48,12 +50,36 @@ function splayer_activate() {
         add_option( 'splayer_options', $defaults );
     } else {
         $existing['version'] = SPLAYER_VERSION;
+        if ( ! isset( $existing['update_info'] ) ) {
+            $existing['update_info'] = array();
+        }
         update_option( 'splayer_options', $existing );
+    }
+
+    // 调度定时更新检查
+    if ( ! wp_next_scheduled( 'splayer_daily_update_check' ) ) {
+        wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', 'splayer_daily_update_check' );
+    }
+
+    // 激活时立即执行一次更新检查
+    SPlayer_Admin::run_update_check();
+}
+
+function splayer_deactivate() {
+    // 清理定时任务
+    $timestamp = wp_next_scheduled( 'splayer_daily_update_check' );
+    if ( $timestamp ) {
+        wp_unschedule_event( $timestamp, 'splayer_daily_update_check' );
     }
 }
 
 function splayer_uninstall() {
-    // handled in uninstall.php
+    // 清理定时任务
+    $timestamp = wp_next_scheduled( 'splayer_daily_update_check' );
+    if ( $timestamp ) {
+        wp_unschedule_event( $timestamp, 'splayer_daily_update_check' );
+    }
+    delete_option( 'splayer_options' );
 }
 
 // expose shortcode
