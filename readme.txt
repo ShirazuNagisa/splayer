@@ -28,11 +28,5 @@ splayer 是一个轻量、极简、圆角风格的 WordPress 音乐播放器插�
 = 如何检查 GitHub 更新? =
 后台 -> SPlayer -> 更新 检查按钮将会请求 GitHub 仓库的 release 信息，若有新版本可下载并安装。
 
-== Changelog ==
-
-= 1.0.0 =
-* 初始发布
-
-== Upgrade Notice ==
 
 请在升级前备份 `splayer` 配置（可手动复制设置）。

@@ -1,6 +1,6 @@
 # SPlayer - WordPress Music Player Plugin
 
-**Current Version: 1.1.4**  
+**Current Version: 1.1.5**  
 **GitHub Repository:** [https://github.com/ShirazuNagisa/splayer](https://github.com/ShirazuNagisa/splayer)
 ---
 
