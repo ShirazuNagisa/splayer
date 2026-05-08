@@ -72,7 +72,6 @@
   panel.className = 'splayer-panel';
 
   panel.innerHTML =
-    '<div class="panel-cover"></div>' +
     '<div class="panel-content">' +
       /* button row: mode | prev | play | next | spacer | playlist */
       '<div class="button-row">' +
@@ -112,7 +111,6 @@
   document.body.appendChild(playlistPanel);
 
   /* -- refs -- */
-  var panelCover = panel.querySelector('.panel-cover');
   var titleEl = panel.querySelector('#sp-title');
   var playBtn = panel.querySelector('#sp-play');
   var prevBtn = panel.querySelector('#sp-prev');
@@ -140,7 +138,6 @@
   function setCover(url) {
     var u = url || defaultCover;
     discCover.style.backgroundImage = 'url(' + u + ')';
-    panelCover.style.backgroundImage = 'url(' + u + ')';
   }
 
   function setTitle(text) {
@@ -353,36 +350,42 @@
       rect = disc.getBoundingClientRect();
     }
 
-    /* 1. disable transition, snap panel exactly onto disc */
-    disablePanelTransition();
-    panel.style.top = rect.top + 'px';
-    panel.style.left = rect.left + 'px';
-    panel.style.right = 'auto';
-    panel.style.width = rect.width + 'px';
-    panel.style.height = rect.height + 'px';
-    panel.style.borderRadius = '50%';
-    panel.style.opacity = '1';
+    var centerX = rect.left + rect.width / 2;
+    var leftSide = centerX < window.innerWidth / 2;
+    var discR = Math.round(rect.width / 2);
+    var discPad = Math.round(rect.width * 1.2);
 
-    /* 2. force reflow & enable transition */
+    /* snap panel behind disc at zero size — disc z-index > panel z-index */
+    disablePanelTransition();
+    panel.classList.add('layout-normal');
+    panel.style.top = rect.top + 'px';
+    panel.style.width = '0px';
+    panel.style.height = '0px';
+    panel.style.opacity = '1';
+    if (leftSide) {
+      panel.style.left = rect.left + 'px';
+      panel.style.right = 'auto';
+      panel.style.paddingLeft = discPad + 'px';
+      panel.style.paddingRight = '14px';
+      panel.style.borderTopLeftRadius = discR + 'px';
+      panel.style.borderTopRightRadius = '16px';
+    } else {
+      panel.style.left = 'auto';
+      panel.style.right = (window.innerWidth - rect.right) + 'px';
+      panel.style.paddingLeft = '14px';
+      panel.style.paddingRight = discPad + 'px';
+      panel.style.borderTopLeftRadius = '16px';
+      panel.style.borderTopRightRadius = discR + 'px';
+    }
+    panel.style.borderBottomRightRadius = '16px';
+    panel.style.borderBottomLeftRadius = '16px';
     enablePanelTransition();
 
-    /* 3. next frame: expand */
+    /* expand — panel grows outward from behind disc */
     requestAnimationFrame(function () {
-      panel.classList.add('layout-normal');
-      var centerX = rect.left + rect.width / 2;
-      if (centerX < window.innerWidth / 2) {
-        panel.style.left = rect.left + 'px';
-      } else {
-        panel.style.left = (rect.left + rect.width - expandW) + 'px';
-      }
-      panel.style.right = 'auto';
       panel.style.width = expandW + 'px';
       panel.style.height = expandH + 'px';
-      panel.style.borderRadius = '16px';
       panel.classList.add('splayer-panel-show');
-
-      disc.style.opacity = '0';
-      disc.style.pointerEvents = 'none';
     });
 
     panelState = 'normal';
@@ -403,25 +406,21 @@
     }
 
     isClosing = true;
-    var rect = disc.getBoundingClientRect();
 
     panel.classList.remove('splayer-panel-show');
     panel.classList.remove('layout-normal');
     panel.classList.remove('layout-playlist');
 
-    disablePanelTransition();
-    panel.style.width = rect.width + 'px';
-    panel.style.height = rect.height + 'px';
-    panel.style.top = rect.top + 'px';
-    panel.style.left = rect.left + 'px';
-    panel.style.borderRadius = '50%';
-    enablePanelTransition();
+    /* shrink back to zero */
+    panel.style.width = '0px';
+    panel.style.height = '0px';
 
     setTimeout(function () {
-      disc.style.opacity = '1';
-      disc.style.pointerEvents = '';
+      panel.style.borderRadius = '16px';
+      panel.style.paddingLeft = '';
+      panel.style.paddingRight = '';
       if (discOrigTop !== null) {
-        disc.style.transition = 'left 0.25s cubic-bezier(0.22, 0.61, 0.36, 1), top 0.4s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.3s ease';
+        disc.style.transition = 'left 0.25s cubic-bezier(0.22, 0.61, 0.36, 1), top 0.4s cubic-bezier(0.22, 0.61, 0.36, 1)';
         var restoreTop = Math.min(discOrigTop, window.innerHeight - disc.offsetHeight - 8);
         if (restoreTop < 8) restoreTop = 8;
         disc.style.top = restoreTop + 'px';
@@ -430,7 +429,7 @@
       panel.style.opacity = '0';
       panelState = 'closed';
       isClosing = false;
-    }, 480);
+    }, 440);
 
     document.removeEventListener('click', handleOutsideClick);
   }
@@ -457,10 +456,6 @@
 
   panel.addEventListener('click', function (e) {
     e.stopPropagation();
-  });
-
-  panelCover.addEventListener('click', function (e) {
-    hidePanel();
   });
 
   /* ============================================================

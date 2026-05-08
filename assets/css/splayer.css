@@ -97,10 +97,8 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   cursor: pointer;
   z-index: 99999;
-  transition: opacity 0.3s ease,
-              left 0.25s cubic-bezier(0.22, 0.61, 0.36, 1),
+  transition: left 0.25s cubic-bezier(0.22, 0.61, 0.36, 1),
               top 0.25s cubic-bezier(0.22, 0.61, 0.36, 1);
-  will-change: opacity;
 }
 
 .splayer-disc::after {
@@ -141,21 +139,18 @@
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   box-shadow: 0 10px 48px var(--sp-panel-shadow);
-  border-radius: 50%;
-  width: 64px;
-  height: 64px;
+  border-radius: 16px;
+  width: 0;
+  height: 0;
   opacity: 0;
   pointer-events: none;
   z-index: 99998;
   overflow: hidden;
   border: 1px solid var(--sp-panel-border);
-  transition: width 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
-              height 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
-              top 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
-              left 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
-              border-radius 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+  transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+              height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
               opacity 0.2s ease;
-  will-change: width, height, left, border-radius;
+  will-change: width, height;
 }
 
 .splayer-panel.no-transition {
@@ -165,41 +160,9 @@
 .splayer-panel-show {
   opacity: 1 !important;
   pointer-events: auto;
-  border-radius: 16px;
 }
 
-/* ---- 封面（唱片变形关键） ---- */
-.splayer-panel .panel-cover {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background-size: cover;
-  background-position: center;
-  z-index: 1;
-  box-shadow: none;
-  transition: width 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
-              height 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
-              border-radius 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
-              top 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
-              left 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
-              transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
-  will-change: width, height, top, left, border-radius, transform;
-}
-
-.splayer-panel-show .panel-cover {
-  top: 50%;
-  left: 14px;
-  width: 52px;
-  height: 52px;
-  border-radius: 10px;
-  transform: translateY(-50%);
-  box-shadow: 0 2px 8px var(--sp-cover-shadow);
-}
-
-/* ---- 控制区（淡入/淡出） ---- */
+/* ---- 控制区 ---- */
 .splayer-panel .panel-content {
   position: absolute;
   left: 0;
@@ -208,12 +171,13 @@
   bottom: 0;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   opacity: 0;
   transition: opacity 0.3s ease 0.1s;
   pointer-events: none;
   z-index: 2;
-  padding-left: 86px;
-  padding-right: 10px;
+  padding: 0 14px;
 }
 
 .splayer-panel-show .panel-content {
@@ -229,10 +193,11 @@
   gap: 4px;
   padding: 0;
   flex-shrink: 0;
+  width: 100%;
 }
 
 .splayer-panel .panel-content .button-row .spacer {
-  width: 10px;
+  flex: 1;
 }
 
 /* 进度条区域 */
@@ -316,7 +281,7 @@
   flex-shrink: 0;
 }
 
-/* ====== GitHub 链接按钮（右下角） ====== */
+/* ====== GitHub 链接按钮 ====== */
 .splayer-github-link {
   position: absolute;
   bottom: 6px;
@@ -592,15 +557,8 @@
     height: 52px;
   }
 
-  .splayer-panel-show .panel-cover {
-    left: 10px;
-    width: 44px;
-    height: 44px;
-  }
-
   .splayer-panel .panel-content {
-    padding-left: 70px;
-    padding-right: 8px;
+    padding: 0 10px;
   }
 
   .splayer-btn {
