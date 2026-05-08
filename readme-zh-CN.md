@@ -1,6 +1,6 @@
 # SPlayer - WordPress 后台音乐播放器插件
 
-**版本：1.1.5**  
+**版本：1.1.6**  
 **GitHub 仓库：** [https://github.com/ShirazuNagisa/splayer](https://github.com/ShirazuNagisa/splayer)  
 
 ---

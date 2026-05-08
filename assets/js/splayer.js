@@ -14,7 +14,8 @@
     modeRepeat: '<svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>',
     playlist: '<svg viewBox="0 0 24 24"><path d="M15 6H3v2h12V6zm0 4H3v2h12v-2zM3 16h8v-2H3v2zM17 6v8.18c-.31-.11-.65-.18-1-.18-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V8h3V6h-5z"/></svg>',
     close: '<svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>',
-    playing: '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>'
+    playing: '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>',
+    github: '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.49.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.89 1.52 2.34 1.08 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02.8-.22 1.65-.33 2.5-.33.85 0 1.7.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48C19.14 20.16 22 16.42 22 12c0-5.52-4.48-10-10-10z"/></svg>'
   };
 
   /* ============================================================
@@ -23,6 +24,8 @@
   var S = window.SPLAYER || {};
   var playlist = Array.isArray(S.playlist) ? S.playlist : [];
   var defaultCover = S.defaultCover || '';
+  var playerOptions = S.options || {};
+  var themeMode = playerOptions.theme_mode || 'auto';
 
   /* ============================================================
      STATE
@@ -35,7 +38,7 @@
   var playMode = 'seq';      // 'seq' | 'shuffle' | 'repeat'
   var isClosing = false;
   var isPlaylistVisible = false;
-  var playlistOrigTop = 0;
+  var discOrigTop = null;
 
   /* progress drag */
   var isProgressDragging = false;
@@ -91,17 +94,22 @@
       '</div>' +
       /* title */
       '<div class="song-title" id="sp-title"></div>' +
-    '</div>' +
-    /* playlist overlay */
-    '<div class="splayer-playlist-overlay" id="sp-playlist-overlay">' +
-      '<div class="playlist-header">' +
-        '<span>播放列表</span>' +
-        '<button class="playlist-close" id="sp-playlist-close">' + ICONS.close + '</button>' +
-      '</div>' +
-      '<div class="playlist-items" id="sp-playlist-items"></div>' +
+      /* github link */
+      '<a class="splayer-github-link" href="https://github.com/ShirazuNagisa/splayer" target="_blank" title="GitHub">' + ICONS.github + '</a>' +
     '</div>';
 
   document.body.appendChild(panel);
+
+  /* -- standalone playlist panel (extends from above/below main panel) -- */
+  var playlistPanel = document.createElement('div');
+  playlistPanel.className = 'splayer-playlist-panel';
+  playlistPanel.innerHTML =
+    '<div class="playlist-header">' +
+      '<span>播放列表</span>' +
+      '<button class="playlist-close" id="sp-playlist-close">' + ICONS.close + '</button>' +
+    '</div>' +
+    '<div class="playlist-items" id="sp-playlist-items"></div>';
+  document.body.appendChild(playlistPanel);
 
   /* -- refs -- */
   var panelCover = panel.querySelector('.panel-cover');
@@ -111,9 +119,8 @@
   var nextBtn = panel.querySelector('#sp-next');
   var modeBtn = panel.querySelector('#sp-mode');
   var playlistBtn = panel.querySelector('#sp-playlist-btn');
-  var playlistOverlay = panel.querySelector('#sp-playlist-overlay');
-  var playlistItems = panel.querySelector('#sp-playlist-items');
-  var playlistClose = panel.querySelector('#sp-playlist-close');
+  var playlistItems = playlistPanel.querySelector('#sp-playlist-items');
+  var playlistClose = playlistPanel.querySelector('#sp-playlist-close');
   var progressEl = panel.querySelector('#sp-progress');
   var progressFilled = panel.querySelector('#sp-progress-filled');
   var progressThumb = panel.querySelector('#sp-progress-thumb');
@@ -331,6 +338,20 @@
     var isMobile = window.innerWidth <= 480;
     var expandW = isMobile ? 280 : 320;
     var expandH = isMobile ? 88 : 110;
+    var bottomMargin = 16;
+
+    /* check if panel bottom overflows screen */
+    var panelBottom = rect.top + expandH;
+    var maxBottom = window.innerHeight - bottomMargin;
+    if (panelBottom > maxBottom) {
+      var overflow = panelBottom - maxBottom;
+      discOrigTop = rect.top;
+      disc.style.transition = 'none';
+      disc.style.transform = 'none';
+      disc.style.top = (rect.top - overflow) + 'px';
+      void disc.offsetHeight;
+      rect = disc.getBoundingClientRect();
+    }
 
     /* 1. disable transition, snap panel exactly onto disc */
     disablePanelTransition();
@@ -361,6 +382,7 @@
       panel.classList.add('splayer-panel-show');
 
       disc.style.opacity = '0';
+      disc.style.pointerEvents = 'none';
     });
 
     panelState = 'normal';
@@ -397,6 +419,14 @@
 
     setTimeout(function () {
       disc.style.opacity = '1';
+      disc.style.pointerEvents = '';
+      if (discOrigTop !== null) {
+        disc.style.transition = 'left 0.25s cubic-bezier(0.22, 0.61, 0.36, 1), top 0.4s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.3s ease';
+        var restoreTop = Math.min(discOrigTop, window.innerHeight - disc.offsetHeight - 8);
+        if (restoreTop < 8) restoreTop = 8;
+        disc.style.top = restoreTop + 'px';
+        discOrigTop = null;
+      }
       panel.style.opacity = '0';
       panelState = 'closed';
       isClosing = false;
@@ -414,6 +444,12 @@
   }
 
   function handleOutsideClick(e) {
+    if (isPlaylistVisible) {
+      if (!panel.contains(e.target) && !disc.contains(e.target) && !playlistPanel.contains(e.target)) {
+        hidePlaylist();
+        return;
+      }
+    }
     if (!panel.contains(e.target) && !disc.contains(e.target)) {
       hidePanel();
     }
@@ -421,6 +457,10 @@
 
   panel.addEventListener('click', function (e) {
     e.stopPropagation();
+  });
+
+  panelCover.addEventListener('click', function (e) {
+    hidePanel();
   });
 
   /* ============================================================
@@ -459,60 +499,58 @@
     if (isPlaylistVisible || panelState !== 'normal') return;
     isPlaylistVisible = true;
 
-    var rect = panel.getBoundingClientRect();
+    var panelRect = panel.getBoundingClientRect();
     var isMobile = window.innerWidth <= 480;
     var playlistH = isMobile ? 220 : 260;
+    var gap = 8;
 
     /* decide direction: if disc is in bottom half, expand upward */
     var discRect = disc.getBoundingClientRect();
     var discCenterY = discRect.top + discRect.height / 2;
+    var expandUpward = discCenterY > window.innerHeight / 2;
 
     updatePlaylistUI();
-    playlistOverlay.classList.add('show');
-    panel.classList.add('layout-playlist');
     playlistBtn.classList.add('active');
+    panel.classList.add('layout-playlist');
 
-    if (discCenterY > window.innerHeight / 2) {
-      /* expand upward */
-      playlistOrigTop = rect.top;
-      var newTop = rect.top - playlistH;
-      if (newTop < 0) newTop = 0;
-      panel.style.top = newTop + 'px';
+    /* position playlist panel below or above the main panel */
+    playlistPanel.style.width = panelRect.width + 'px';
+    playlistPanel.style.left = panelRect.left + 'px';
+    playlistPanel.style.height = '0px';
+
+    if (expandUpward) {
+      var btm = window.innerHeight - panelRect.top + gap;
+      var maxBtm = window.innerHeight - gap - playlistH;
+      if (btm > maxBtm) btm = maxBtm;
+      playlistPanel.style.top = 'auto';
+      playlistPanel.style.bottom = btm + 'px';
     } else {
-      /* expand downward */
-      playlistOrigTop = rect.top;
+      playlistPanel.style.top = (panelRect.bottom + gap) + 'px';
+      playlistPanel.style.bottom = 'auto';
     }
 
-    panel.style.height = (rect.height + playlistH) + 'px';
+    requestAnimationFrame(function () {
+      playlistPanel.style.height = playlistH + 'px';
+      playlistPanel.classList.add('show');
+    });
   }
 
   function hidePlaylist() {
     if (!isPlaylistVisible) return;
     isPlaylistVisible = false;
 
-    playlistOverlay.classList.remove('show');
+    playlistPanel.classList.remove('show');
+    playlistPanel.style.height = '0px';
     panel.classList.remove('layout-playlist');
     playlistBtn.classList.remove('active');
-
-    /* restore top if was expanded upward */
-    var discRect = disc.getBoundingClientRect();
-    var discCenterY = discRect.top + discRect.height / 2;
-    if (discCenterY > window.innerHeight / 2 && playlistOrigTop) {
-      panel.style.top = playlistOrigTop + 'px';
-    }
-
-    /* restore normal panel height */
-    var isMobile = window.innerWidth <= 480;
-    panel.style.height = (isMobile ? 88 : 110) + 'px';
   }
 
   function hidePlaylistImmediate() {
     isPlaylistVisible = false;
-    playlistOverlay.classList.remove('show');
+    playlistPanel.classList.remove('show');
+    playlistPanel.style.height = '0px';
     panel.classList.remove('layout-playlist');
     playlistBtn.classList.remove('active');
-    var isMobile = window.innerWidth <= 480;
-    panel.style.height = (isMobile ? 88 : 110) + 'px';
   }
 
   function togglePlaylist() {
@@ -682,6 +720,40 @@
   window.addEventListener('touchmove', doDrag, { passive: false });
   window.addEventListener('touchend', endDrag);
   window.addEventListener('touchcancel', endDrag);
+
+  /* ============================================================
+     WINDOW RESIZE — 窗口缩放时唱片不跑出视口
+     ============================================================ */
+  function clampDiscPosition() {
+    if (panelState !== 'closed') return;
+    var dTop = disc.offsetTop;
+    var dLeft = disc.offsetLeft;
+    var dW = disc.offsetWidth;
+    var dH = disc.offsetHeight;
+    var margin = 8;
+
+    var clampedTop = Math.max(margin, Math.min(dTop, window.innerHeight - dH - margin));
+    var clampedLeft = Math.max(margin, Math.min(dLeft, window.innerWidth - dW - margin));
+
+    if (clampedTop !== dTop) { disc.style.top = clampedTop + 'px'; }
+    if (clampedLeft !== dLeft) { disc.style.left = clampedLeft + 'px'; }
+  }
+
+  window.addEventListener('resize', clampDiscPosition);
+
+  /* ============================================================
+     THEME
+     ============================================================ */
+  function applyTheme(mode) {
+    document.body.classList.remove('splayer-light', 'splayer-dark');
+    if (mode === 'light') {
+      document.body.classList.add('splayer-light');
+    } else if (mode === 'dark') {
+      document.body.classList.add('splayer-dark');
+    }
+  }
+
+  applyTheme(themeMode);
 
   /* ============================================================
      INIT

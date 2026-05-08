@@ -45,90 +45,212 @@ class SPlayer_Admin {
     $playlist = isset($options['playlist']) && is_array($options['playlist'])
       ? $options['playlist']
       : [];
+    $settings = isset($options['options']) && is_array($options['options'])
+      ? $options['options']
+      : [];
+    $theme_mode = isset($settings['theme_mode']) ? $settings['theme_mode'] : 'auto';
+    $last_check = isset($options['last_update_check']) ? $options['last_update_check'] : 0;
 
     ?>
     <div class="wrap">
-      <h1>SPlayer 播放列表管理</h1>
+      <h1>SPlayer 设置</h1>
 
-      <table class="widefat striped">
-        <thead>
-          <tr>
-            <th style="width:20%;">标题</th>
-            <th style="width:35%;">音频 URL</th>
-            <th style="width:35%;">封面 URL</th>
-            <th style="width:10%;">操作</th>
-          </tr>
-        </thead>
-        <tbody id="splayer-playlist-body">
-          <?php foreach ($playlist as $track): ?>
+      <h2 class="nav-tab-wrapper" style="margin-bottom:16px;">
+        <a class="nav-tab nav-tab-active" href="#sp-playlist-section">播放列表</a>
+        <a class="nav-tab" href="#sp-settings-section">主题与更新</a>
+      </h2>
+
+      <!-- 播放列表 -->
+      <div id="sp-playlist-section">
+        <table class="widefat striped">
+          <thead>
             <tr>
-              <td>
-                <input type="text" class="sp-title" value="<?php echo esc_attr($track['title'] ?? ''); ?>" />
-              </td>
-              <td>
-                <input type="text" class="sp-url" value="<?php echo esc_attr($track['url'] ?? ''); ?>" />
-              </td>
-              <td>
-                <input type="text" class="sp-cover" value="<?php echo esc_attr($track['cover'] ?? ''); ?>" />
-              </td>
-              <td>
-                <button type="button" class="button sp-remove">删除</button>
-              </td>
+              <th style="width:20%;">标题</th>
+              <th style="width:35%;">音频 URL</th>
+              <th style="width:35%;">封面 URL</th>
+              <th style="width:10%;">操作</th>
             </tr>
-          <?php endforeach; ?>
-        </tbody>
-      </table>
+          </thead>
+          <tbody id="splayer-playlist-body">
+            <?php foreach ($playlist as $track): ?>
+              <tr>
+                <td>
+                  <input type="text" class="sp-title" value="<?php echo esc_attr($track['title'] ?? ''); ?>" />
+                </td>
+                <td>
+                  <input type="text" class="sp-url" value="<?php echo esc_attr($track['url'] ?? ''); ?>" />
+                </td>
+                <td>
+                  <input type="text" class="sp-cover" value="<?php echo esc_attr($track['cover'] ?? ''); ?>" />
+                </td>
+                <td>
+                  <button type="button" class="button sp-remove">删除</button>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
 
-      <p style="margin-top:16px;">
-        <button type="button" class="button" id="sp-add-track">添加歌曲</button>
-        <button type="button" class="button button-primary" id="sp-save-playlist">保存设置</button>
-      </p>
+        <p style="margin-top:16px;">
+          <button type="button" class="button" id="sp-add-track">添加歌曲</button>
+          <button type="button" class="button button-primary" id="sp-save-playlist">保存设置</button>
+        </p>
+      </div>
+
+      <!-- 主题与更新 -->
+      <div id="sp-settings-section" style="display:none;">
+        <h3>主题模式</h3>
+        <table class="form-table">
+          <tr>
+            <th scope="row"><label for="sp-theme-mode">深浅色模式</label></th>
+            <td>
+              <select id="sp-theme-mode">
+                <option value="auto" <?php selected($theme_mode, 'auto'); ?>>自动（跟随系统）</option>
+                <option value="light" <?php selected($theme_mode, 'light'); ?>>浅色模式</option>
+                <option value="dark" <?php selected($theme_mode, 'dark'); ?>>深色模式</option>
+              </select>
+              <p class="description">选择播放器的颜色主题。自动模式会跟随系统深浅色设置。</p>
+            </td>
+          </tr>
+        </table>
+
+        <h3 style="margin-top:24px;">GitHub 更新</h3>
+        <table class="form-table">
+          <tr>
+            <th scope="row">当前版本</th>
+            <td><strong><?php echo esc_html(SPLAYER_VERSION); ?></strong></td>
+          </tr>
+          <tr>
+            <th scope="row">上次检查</th>
+            <td>
+              <?php if ($last_check): ?>
+                <?php echo esc_html(wp_date('Y-m-d H:i:s', $last_check)); ?>
+              <?php else: ?>
+                尚未检查
+              <?php endif; ?>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">检查更新</th>
+            <td>
+              <button type="button" class="button" id="sp-check-update">手动检查更新</button>
+              <span id="sp-update-result" style="margin-left:8px;"></span>
+            </td>
+          </tr>
+        </table>
+
+        <p>
+          <button type="button" class="button button-primary" id="sp-save-settings">保存主题设置</button>
+        </p>
+      </div>
     </div>
+
+    <style>
+      #sp-playlist-section input[type="text"] { width: 100%; }
+      #sp-update-result { font-size: 13px; }
+      #sp-update-result.success { color: #34d399; }
+      #sp-update-result.error { color: #ef4444; }
+      #sp-update-result.info { color: #a78bfa; }
+    </style>
 
     <script>
     (function () {
-      const tbody = document.getElementById('splayer-playlist-body');
-
-      document.getElementById('sp-add-track').addEventListener('click', () => {
-        tbody.insertAdjacentHTML('beforeend', `
-          <tr>
-            <td><input type="text" class="sp-title" /></td>
-            <td><input type="text" class="sp-url" /></td>
-            <td><input type="text" class="sp-cover" /></td>
-            <td><button type="button" class="button sp-remove">删除</button></td>
-          </tr>
-        `);
+      /* ---- tab switching ---- */
+      var tabs = document.querySelectorAll('.nav-tab');
+      tabs.forEach(function(tab) {
+        tab.addEventListener('click', function(e) {
+          e.preventDefault();
+          tabs.forEach(function(t) { t.classList.remove('nav-tab-active'); });
+          this.classList.add('nav-tab-active');
+          document.getElementById('sp-playlist-section').style.display = 'none';
+          document.getElementById('sp-settings-section').style.display = 'none';
+          var target = this.getAttribute('href');
+          document.querySelector(target).style.display = '';
+        });
       });
 
-      tbody.addEventListener('click', (e) => {
+      /* ---- playlist ---- */
+      var tbody = document.getElementById('splayer-playlist-body');
+
+      document.getElementById('sp-add-track').addEventListener('click', function() {
+        tbody.insertAdjacentHTML('beforeend', [
+          '<tr>',
+            '<td><input type="text" class="sp-title" /></td>',
+            '<td><input type="text" class="sp-url" /></td>',
+            '<td><input type="text" class="sp-cover" /></td>',
+            '<td><button type="button" class="button sp-remove">删除</button></td>',
+          '</tr>'
+        ].join(''));
+      });
+
+      tbody.addEventListener('click', function(e) {
         if (e.target.classList.contains('sp-remove')) {
           e.target.closest('tr').remove();
         }
       });
 
-      document.getElementById('sp-save-playlist').addEventListener('click', () => {
-        const data = [];
-
-        tbody.querySelectorAll('tr').forEach(tr => {
-          const title = tr.querySelector('.sp-title').value.trim();
-          const url   = tr.querySelector('.sp-url').value.trim();
-          const cover = tr.querySelector('.sp-cover').value.trim();
-
+      document.getElementById('sp-save-playlist').addEventListener('click', function() {
+        var data = [];
+        tbody.querySelectorAll('tr').forEach(function(tr) {
+          var title = tr.querySelector('.sp-title').value.trim();
+          var url   = tr.querySelector('.sp-url').value.trim();
+          var cover = tr.querySelector('.sp-cover').value.trim();
           if (url) {
-            data.push({ title, url, cover });
+            data.push({ title: title, url: url, cover: cover });
           }
         });
 
-        const form = new FormData();
+        var form = new FormData();
         form.append('action', 'splayer_save_playlist');
         form.append('playlist', JSON.stringify(data));
 
-        fetch(ajaxurl, {
-          method: 'POST',
-          body: form
-        }).then(() => {
+        fetch(ajaxurl, { method: 'POST', body: form }).then(function() {
           alert('播放列表已保存');
         });
+      });
+
+      /* ---- theme settings ---- */
+      document.getElementById('sp-save-settings').addEventListener('click', function() {
+        var themeMode = document.getElementById('sp-theme-mode').value;
+        var form = new FormData();
+        form.append('action', 'splayer_save_settings');
+        form.append('theme_mode', themeMode);
+
+        fetch(ajaxurl, { method: 'POST', body: form }).then(function() {
+          alert('主题设置已保存');
+        });
+      });
+
+      /* ---- manual update check ---- */
+      document.getElementById('sp-check-update').addEventListener('click', function() {
+        var btn = this;
+        var result = document.getElementById('sp-update-result');
+        btn.disabled = true;
+        result.className = '';
+        result.textContent = '检查中...';
+
+        var form = new FormData();
+        form.append('action', 'splayer_check_update');
+
+        fetch(ajaxurl, { method: 'POST', body: form })
+          .then(function(r) { return r.json(); })
+          .then(function(res) {
+            if (res.success) {
+              var v = res.data.version || '?';
+              result.className = 'success';
+              result.textContent = '最新版本: ' + v;
+            } else {
+              result.className = 'error';
+              result.textContent = '检查失败: ' + (res.data || '未知错误');
+            }
+          })
+          .catch(function() {
+            result.className = 'error';
+            result.textContent = '网络错误';
+          })
+          .finally(function() {
+            btn.disabled = false;
+          });
       });
     })();
     </script>
@@ -150,9 +272,29 @@ class SPlayer_Admin {
       $list = [];
     }
 
-    update_option('splayer_options', [
-      'playlist' => $list
-    ]);
+    $options = get_option('splayer_options', []);
+    $options['playlist'] = $list;
+    update_option('splayer_options', $options);
+
+    wp_die();
+  }
+
+  /**
+   * AJAX：保存主题设置
+   */
+  public static function ajax_save_settings() {
+    if (!current_user_can('manage_options')) {
+      wp_die();
+    }
+
+    $theme_mode = isset($_POST['theme_mode']) ? sanitize_text_field($_POST['theme_mode']) : 'auto';
+
+    $options = get_option('splayer_options', []);
+    if (!isset($options['options']) || !is_array($options['options'])) {
+      $options['options'] = [];
+    }
+    $options['options']['theme_mode'] = $theme_mode;
+    update_option('splayer_options', $options);
 
     wp_die();
   }
@@ -243,6 +385,22 @@ class SPlayer_Admin {
     if (is_wp_error($result)) {
       wp_send_json_error($result->get_error_message());
     }
+
+    // 保存检查结果
+    $options = get_option('splayer_options', []);
+    $old_update = isset($options['update_info']) ? $options['update_info'] : [];
+    $dismissed = !empty($old_update['dismissed']) ? $old_update['dismissed'] : false;
+    $remind_at = !empty($old_update['remind_at']) ? $old_update['remind_at'] : 0;
+    $old_version = !empty($old_update['version']) ? $old_update['version'] : '';
+    if ($old_version !== $result['version']) {
+      $dismissed = false;
+      $remind_at = 0;
+    }
+    $result['dismissed'] = $dismissed;
+    $result['remind_at'] = $remind_at;
+    $options['update_info'] = $result;
+    $options['last_update_check'] = time();
+    update_option('splayer_options', $options);
 
     wp_send_json_success($result);
   }

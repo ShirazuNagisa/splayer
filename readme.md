@@ -1,6 +1,6 @@
 # SPlayer - WordPress Music Player Plugin
 
-**Current Version: 1.1.5**  
+**Current Version: 1.1.6**  
 **GitHub Repository:** [https://github.com/ShirazuNagisa/splayer](https://github.com/ShirazuNagisa/splayer)
 ---
 
@@ -30,6 +30,11 @@ For detailed instructions, screenshots, and usage guides, please refer to the la
 Refer to the official document: [sh1razu's blog](https://blog.shirazu-nagisa.com/index.php/2025/12/24/splayer%e4%bd%bf%e7%94%a8%e6%8c%87%e5%8d%97/)
 ---
 ## Changelog
+
+### v1.1.6 - 2026-05-08
+- 修复了已知bug
+- 优化了展开页布局
+- 添加了深浅色模式选择
 
 ### v1.1.5 - 2026-05-07
 - 为展开页添加了进度条区域

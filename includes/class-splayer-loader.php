@@ -16,6 +16,9 @@ class SPlayer_Loader {
         add_action( 'wp_ajax_splayer_save_playlist', array( 'SPlayer_Admin', 'ajax_save_playlist' ) );
         add_action( 'wp_ajax_splayer_get_playlist', array( 'SPlayer_Admin', 'ajax_get_playlist' ) );
 
+        // AJAX: settings
+        add_action( 'wp_ajax_splayer_save_settings', array( 'SPlayer_Admin', 'ajax_save_settings' ) );
+
         // AJAX: update check
         add_action( 'wp_ajax_splayer_check_update', array( 'SPlayer_Admin', 'ajax_check_update' ) );
         add_action( 'wp_ajax_splayer_install_update', array( 'SPlayer_Admin', 'ajax_install_update' ) );
