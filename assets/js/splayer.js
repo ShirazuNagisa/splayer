@@ -39,6 +39,8 @@
   var isClosing = false;
   var isPlaylistVisible = false;
   var discOrigTop = null;
+  var panelLeftSide = true;
+  var panelDiscR = 0;
 
   /* progress drag */
   var isProgressDragging = false;
@@ -111,6 +113,7 @@
   document.body.appendChild(playlistPanel);
 
   /* -- refs -- */
+  var panelContent = panel.querySelector('.panel-content');
   var titleEl = panel.querySelector('#sp-title');
   var playBtn = panel.querySelector('#sp-play');
   var prevBtn = panel.querySelector('#sp-prev');
@@ -354,10 +357,12 @@
     var leftSide = centerX < window.innerWidth / 2;
     var discR = Math.round(rect.width / 2);
     var discPad = Math.round(rect.width * 1.2);
+    panelLeftSide = leftSide;
+    panelDiscR = discR;
 
     /* snap panel behind disc at zero size — disc z-index > panel z-index */
     disablePanelTransition();
-    panel.classList.add('layout-normal');
+    panel.classList.add('layout-normal', 'no-border');
     panel.style.top = rect.top + 'px';
     panel.style.width = '0px';
     panel.style.height = '0px';
@@ -365,6 +370,7 @@
     if (leftSide) {
       panel.style.left = rect.left + 'px';
       panel.style.right = 'auto';
+      panelContent.style.alignItems = 'flex-end';
       panel.style.paddingLeft = discPad + 'px';
       panel.style.paddingRight = '14px';
       panel.style.borderTopLeftRadius = discR + 'px';
@@ -372,6 +378,7 @@
     } else {
       panel.style.left = 'auto';
       panel.style.right = (window.innerWidth - rect.right) + 'px';
+      panelContent.style.alignItems = 'flex-start';
       panel.style.paddingLeft = '14px';
       panel.style.paddingRight = discPad + 'px';
       panel.style.borderTopLeftRadius = '16px';
@@ -386,6 +393,7 @@
       panel.style.width = expandW + 'px';
       panel.style.height = expandH + 'px';
       panel.classList.add('splayer-panel-show');
+      panel.classList.remove('no-border');
     });
 
     panelState = 'normal';
@@ -410,23 +418,30 @@
     panel.classList.remove('splayer-panel-show');
     panel.classList.remove('layout-normal');
     panel.classList.remove('layout-playlist');
+    panel.classList.add('no-border');
 
-    /* shrink back to zero */
+    /* shrink back to zero — corner radius stays discR, no直角穿帮 */
     panel.style.width = '0px';
     panel.style.height = '0px';
 
     setTimeout(function () {
-      panel.style.borderRadius = '16px';
-      panel.style.paddingLeft = '';
-      panel.style.paddingRight = '';
       if (discOrigTop !== null) {
-        disc.style.transition = 'left 0.25s cubic-bezier(0.22, 0.61, 0.36, 1), top 0.4s cubic-bezier(0.22, 0.61, 0.36, 1)';
+        disc.style.transition = 'left 0.25s ease-in-out, top 0.4s ease-in-out';
         var restoreTop = Math.min(discOrigTop, window.innerHeight - disc.offsetHeight - 8);
         if (restoreTop < 8) restoreTop = 8;
         disc.style.top = restoreTop + 'px';
         discOrigTop = null;
       }
       panel.style.opacity = '0';
+      panel.classList.remove('no-border');
+      panelContent.style.alignItems = '';
+      panel.style.borderRadius = '';
+      panel.style.borderTopLeftRadius = '';
+      panel.style.borderTopRightRadius = '';
+      panel.style.borderBottomLeftRadius = '';
+      panel.style.borderBottomRightRadius = '';
+      panel.style.paddingLeft = '';
+      panel.style.paddingRight = '';
       panelState = 'closed';
       isClosing = false;
     }, 440);

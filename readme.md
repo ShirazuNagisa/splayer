@@ -31,6 +31,9 @@ Refer to the official document: [sh1razu's blog](https://blog.shirazu-nagisa.com
 ---
 ## Changelog
 
+### v1.1.7-alpha - 2026-05-08
+- 优化了展开页布局
+
 ### v1.1.6 - 2026-05-08
 - 修复了已知bug
 - 优化了展开页布局
