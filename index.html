@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPlayer — 独立音乐播放器</title>
+  <link rel="stylesheet" href="splayer.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 60px 20px 40px;
+    }
+    .hero h1 {
+      font-size: 36px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #a78bfa, #7c3aed);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      color: rgba(255,255,255,0.4);
+      margin-top: 12px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .hero code {
+      background: rgba(255,255,255,0.08);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .demo-section {
+      position: relative;
+      min-height: 400px;
+      margin: 20px 0;
+    }
+
+    .examples {
+      max-width: 800px;
+      margin: 80px auto 40px;
+      padding: 0 20px;
+    }
+    .examples h2 {
+      font-size: 20px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 16px;
+      font-weight: 500;
+    }
+    .example-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .example-card h3 {
+      font-size: 14px;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+    .example-card pre {
+      background: rgba(0,0,0,0.3);
+      padding: 14px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      overflow-x: auto;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.5;
+      margin: 0;
+    }
+    .example-card pre .hl { color: #a78bfa; }
+    .example-card pre .cm { color: rgba(255,255,255,0.3); }
+    .example-card pre .str { color: #34d399; }
+
+    .footer {
+      text-align: center;
+      padding: 40px 20px 60px;
+      color: rgba(255,255,255,0.2);
+      font-size: 13px;
+    }
+    .footer a {
+      color: rgba(255,255,255,0.3);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer a:hover { color: #a78bfa; }
+  </style>
+</head>
+<body>
+
+  <div class="hero">
+    <h1>SPlayer</h1>
+    <p>
+      轻量、极简、圆角风格的独立音乐播放器<br>
+      可拖动的唱片 · 磨砂玻璃展开面板 · 播放列表管理
+    </p>
+    <p style="margin-top:8px;" id="hero-codes"></p>
+  </div>
+
+  <div class="demo-section">
+    <div id="splayer-demo"></div>
+  </div>
+
+  <div class="examples">
+    <h2>&#9889; 快速开始</h2>
+    <div class="example-card" id="example-simple"></div>
+    <div class="example-card" id="example-config"></div>
+    <div class="example-card" id="example-api"></div>
+  </div>
+
+  <div class="footer">
+    <a href="https://github.com/ShirazuNagisa/splayer" target="_blank">GitHub</a>
+    &nbsp;&middot;&nbsp; MIT License
+  </div>
+
+  <script>
+    // escape HTML via TextNode (immune to formatters)
+    function escHtml(str) {
+      var d = document.createElement('div');
+      d.appendChild(document.createTextNode(str));
+      return d.innerHTML;
+    }
+
+    function codeBlock(str) {
+      return '<pre>' + str + '</pre>';
+    }
+
+    // Hero codes
+    document.getElementById('hero-codes').innerHTML =
+      '<code>' + escHtml('<link rel="stylesheet" href="splayer.css">') + '</code>' +
+      '<code style="margin-left:6px;">' + escHtml('<script src="splayer.js"><\/script>') + '</code>';
+
+    // Example 1
+    document.getElementById('example-simple').innerHTML =
+      '<h3>最简单的嵌入方式</h3>' +
+      codeBlock(escHtml(
+        '<div id="player"></div>\n' +
+        '<script>\n' +
+        '  new SPlayer({\n' +
+        '    container: document.getElementById("player"),\n' +
+        '    playlist: [\n' +
+        '      { title: \'歌名\', url: \'https://...\' }\n' +
+        '    ]\n' +
+        '  });\n' +
+        '<\/script>'
+      ));
+
+    // Example 2
+    document.getElementById('example-config').innerHTML =
+      '<h3>完整配置选项</h3>' +
+      codeBlock(
+        '<span class="hl">new SPlayer</span>({\n' +
+        '  container: <span class="hl">document.body</span>,         <span class="cm">// 容器元素</span>\n' +
+        '  playlist: [ ... ],                      <span class="cm">// 播放列表</span>\n' +
+        '  defaultCover: <span class="str">\'cover.jpg\'</span>,        <span class="cm">// 默认封面</span>\n' +
+        '  theme: <span class="str">\'auto\'</span>,                     <span class="cm">// auto | light | dark</span>\n' +
+        '  left: <span class="str">\'16px\'</span>,                      <span class="cm">// 唱片初始水平位置</span>\n' +
+        '  top: <span class="str">\'50%\'</span>                        <span class="cm">// 唱片初始垂直位置</span>\n' +
+        '});'
+      );
+
+    // Example 3
+    document.getElementById('example-api').innerHTML =
+      '<h3>公共 API</h3>' +
+      codeBlock(
+        'var player = <span class="hl">new SPlayer</span>({ ... });\n\n' +
+        '<span class="hl">player.play</span>();                  <span class="cm">// 播放</span>\n' +
+        '<span class="hl">player.pause</span>();                 <span class="cm">// 暂停</span>\n' +
+        '<span class="hl">player.togglePlay</span>();            <span class="cm">// 切换播放/暂停</span>\n' +
+        '<span class="hl">player.nextTrack</span>();             <span class="cm">// 下一曲</span>\n' +
+        '<span class="hl">player.prevTrack</span>();             <span class="cm">// 上一曲</span>\n' +
+        '<span class="hl">player.destroy</span>();               <span class="cm">// 销毁播放器（清理事件和DOM）</span>'
+      );
+
+    // Initialize demo player
+    var demo = new SPlayer({
+      container: document.getElementById('splayer-demo'),
+      playlist: [
+        { title: '起风了', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', cover: '' },
+        { title: '光年之外', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', cover: '' },
+        { title: '平凡之路', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3', cover: '' },
+        { title: '夜的钢琴曲', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3', cover: '' }
+      ],
+      defaultCover: 'assets/media/default-cover.jpg',
+      theme: 'auto'
+    });
+
+    window.splayer = demo;
+  </script>
+</body>
+</html>
