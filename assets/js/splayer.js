@@ -370,17 +370,23 @@
     if (leftSide) {
       panel.style.left = rect.left + 'px';
       panel.style.right = 'auto';
-      panelContent.style.alignItems = 'flex-end';
       panel.style.paddingLeft = discPad + 'px';
       panel.style.paddingRight = '14px';
+      panelContent.style.left = discPad + 'px';
+      panelContent.style.right = '0';
+      panelContent.style.padding = '0 10px 0 0';
+      panelContent.style.alignItems = 'center';
       panel.style.borderTopLeftRadius = discR + 'px';
       panel.style.borderTopRightRadius = '16px';
     } else {
       panel.style.left = 'auto';
       panel.style.right = (window.innerWidth - rect.right) + 'px';
-      panelContent.style.alignItems = 'flex-start';
       panel.style.paddingLeft = '14px';
       panel.style.paddingRight = discPad + 'px';
+      panelContent.style.left = '0';
+      panelContent.style.right = discPad + 'px';
+      panelContent.style.padding = '0 0 0 10px';
+      panelContent.style.alignItems = 'center';
       panel.style.borderTopLeftRadius = '16px';
       panel.style.borderTopRightRadius = discR + 'px';
     }
@@ -435,6 +441,9 @@
       panel.style.opacity = '0';
       panel.classList.remove('no-border');
       panelContent.style.alignItems = '';
+      panelContent.style.left = '';
+      panelContent.style.right = '';
+      panelContent.style.padding = '';
       panel.style.borderRadius = '';
       panel.style.borderTopLeftRadius = '';
       panel.style.borderTopRightRadius = '';
@@ -447,6 +456,20 @@
     }, 440);
 
     document.removeEventListener('click', handleOutsideClick);
+  }
+
+  /** sync panel position with disc when dragging */
+  function syncPanelPosition() {
+    if (panelState === 'closed') return;
+    var rect = disc.getBoundingClientRect();
+    panel.style.top = rect.top + 'px';
+    if (panelLeftSide) {
+      panel.style.left = rect.left + 'px';
+      panel.style.right = 'auto';
+    } else {
+      panel.style.left = 'auto';
+      panel.style.right = (window.innerWidth - rect.right) + 'px';
+    }
   }
 
   function togglePanel() {
@@ -693,6 +716,10 @@
     y = Math.max(0, Math.min(window.innerHeight - disc.offsetHeight, y));
     disc.style.left = x + 'px';
     disc.style.top = y + 'px';
+
+    if (panelState !== 'closed') {
+      syncPanelPosition();
+    }
   }
 
   function endDrag() {
@@ -716,6 +743,10 @@
       disc.style.left = '16px';
     } else {
       disc.style.left = (window.innerWidth - disc.offsetWidth - 16) + 'px';
+    }
+
+    if (panelState !== 'closed') {
+      syncPanelPosition();
     }
   }
 

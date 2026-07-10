@@ -3,7 +3,7 @@
  * Plugin Name: splayer
  * Plugin URI: https://github.com/ShirazuNagisa/splayer
  * Description: Lightweight rounded music player for WordPress with draggable disc, frosted glass expanded window, playlist management and GitHub update check.
- * Version: 1.1.7-alpha
+ * Version: 1.1.8-alpha
  * Author: Shirazu
  * Author URI: https://github.com/ShirazuNagisa
  * Text Domain: splayer
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'SPLAYER_VERSION', '1.1.7-alpha' );
+define( 'SPLAYER_VERSION', '1.1.8-alpha' );
 define( 'SPLAYER_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SPLAYER_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'SPLAYER_GITHUB_REPO', 'https://api.github.com/repos/ShirazuNagisa/splayer' );
